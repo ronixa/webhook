@@ -27,6 +27,20 @@ deno run -A 1_generate_keys.ts
 deno run -A 2_publisher.ts
 ```
 
+OR
+
+*Note: FIFO by default (RPUSH/LPOP), but retries are NOT FIFO.*
+
+```bash
+deno run -A 2_redis_publisher.ts
+```
+
+*If sequential retries are required, you must handle them in-code and block the processing until the message is successfully processed or dropped*
+
+```bash
+deno run -A 2_redis_seq_publisher.ts
+```
+
 **Terminal #3**
 
 ```bash
@@ -37,6 +51,12 @@ deno run -A 3_consume.ts
 
 ```bash
 bash 4_publish.sh
+```
+
+## Distributed System (Optional)
+
+```bash
+docker run --restart always --name webhook -p 6379:6379 -d redis redis-server --save 60 1 --loglevel warning
 ```
 
 ## License

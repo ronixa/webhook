@@ -7,6 +7,10 @@ Deno.serve({ port: 9000 }, async (req) => {
 
   if (method === "POST" && pathname === "/webhook") {
     try {
+      if (Math.random() < 0.8) {
+        throw new Error("Mocked error occured...");
+      }
+
       const body = await req.json();
       console.debug("Body received", body);
 
