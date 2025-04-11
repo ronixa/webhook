@@ -6,6 +6,7 @@ type WebhookJob = {
   url: string;
   payload: unknown;
   attempt: number;
+  target: string; // Customer id - can be an api key or any other secret shared with customer to identify which Public RSA Certificate to use
 };
 
 const retryDelays = [1000, 2000, 4000, 8000, 16000]; // ms
@@ -13,7 +14,7 @@ const queue: WebhookJob[] = [];
 
 // Enqueue a job
 function enqueue(url: string, payload: unknown) {
-  queue.push({ url, payload, attempt: 0 });
+  queue.push({ url, payload, attempt: 0, target: "customer-1" });
 }
 
 // Background job processor

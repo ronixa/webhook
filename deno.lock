@@ -1,6 +1,7 @@
 {
   "version": "4",
   "specifiers": {
+    "npm:kafkajs@^2.2.4": "2.2.4",
     "npm:redis@^4.7.0": "4.7.0_@redis+client@1.6.0"
   },
   "npm": {
@@ -48,6 +49,9 @@
     "generic-pool@3.9.0": {
       "integrity": "sha512-hymDOu5B53XvN4QT9dBmZxPX4CWhBPPLguTZ9MMFeFa/Kg0xWVfylOVNlJji/E7yTZWFd/q9GO5TxDLq156D7g=="
     },
+    "kafkajs@2.2.4": {
+      "integrity": "sha512-j/YeapB1vfPT2iOIUn/vxdyKEuhuY2PxMBvf5JWux6iSaukAccrMtXEY/Lb7OvavDhOWME589bpLrEdnVHjfjA=="
+    },
     "redis@4.7.0_@redis+client@1.6.0": {
       "integrity": "sha512-zvmkHEAdGMn+hMRXuMBtu4Vo5P6rHQjLoHftu+lBqq8ZTA3RCVC/WzD790bkKKiNFp7d5/9PcSD19fJyyRvOdQ==",
       "dependencies": [
@@ -65,6 +69,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:kafkajs@^2.2.4",
       "npm:redis@^4.7.0"
     ]
   }

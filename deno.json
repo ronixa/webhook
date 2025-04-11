@@ -1,5 +1,6 @@
 {
   "imports": {
-    "redis": "npm:redis@^4.7.0"
+    "redis": "npm:redis@^4.7.0",
+    "kafkajs": "npm:kafkajs@^2.2.4"
   }
 }

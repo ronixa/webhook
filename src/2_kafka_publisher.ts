@@ -1,71 +1,30 @@
-// deno run -A 2_redis_seq_publisher.ts
+// deno run -A 2_kafka_publisher.ts
 
 import { publicEncrypt } from "node:crypto";
 import { Buffer } from "node:buffer";
-import { createClient } from "redis";
+
+import { PubSub } from "./libs/kafka.ts";
 
 type WebhookJob = {
   url: string;
   payload: unknown;
   attempt: number;
   target: string; // Customer id - can be an api key or any other secret shared with customer to identify which Public RSA Certificate to use
+  id: number;
 };
 
-const redis = createClient({
-  url: "redis://localhost:6379",
-});
-redis.on("error", (err) => console.error("Redis Client Error", err));
-await redis.connect();
+const pubSub = new PubSub("webhook");
+await pubSub.setupProducer();
 
 // Enqueue a job
 async function enqueue(job: WebhookJob) {
-  await redis.rPush("webhookQueue", JSON.stringify(job));
+  await pubSub.sendMessage("events", [
+    { key: job.target, value: JSON.stringify(job) },
+  ]);
 }
 
-// Background job processor
-async function processQueue() {
-  while (true) {
-    const jobString = await redis.lPop("webhookQueue");
-    if (!jobString) {
-      await delay(100);
-      continue;
-    }
-
-    const job = JSON.parse(jobString);
-
-    const maxRetries = 5;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const res = await fetch(job.url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(job.payload),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        console.log(`✅ Success on attempt ${attempt}`);
-        break;
-      } catch (err) {
-        console.warn(`⚠️ Attempt ${attempt} failed:`, err.message);
-        if (attempt < maxRetries) {
-          const backoff = Math.pow(2, attempt) * 1000;
-          await delay(backoff);
-        } else {
-          console.error("🚨 Max retries reached, dropping job:", job);
-        }
-      }
-    }
-
-    await delay(10); // short cooldown
-  }
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// Start the queue processor
-processQueue();
+// For local debugging
+let id = 0;
 
 // Start HTTP server using official Deno.serve
 Deno.serve({ port: 4242, hostname: "0.0.0.0" }, async (req) => {
@@ -73,7 +32,7 @@ Deno.serve({ port: 4242, hostname: "0.0.0.0" }, async (req) => {
 
   if (req.method === "POST" && pathname === "/publish") {
     try {
-      const { url, payload } = await req.json();
+      const { url, payload, target } = await req.json();
 
       if (typeof url !== "string") {
         return new Response("Invalid: 'url' must be a string", { status: 400 });
@@ -97,7 +56,8 @@ Deno.serve({ port: 4242, hostname: "0.0.0.0" }, async (req) => {
         url,
         payload: encryptedPayload,
         attempt: 0,
-        target: "customer-1",
+        target,
+        id: ++id,
       });
       return new Response("Accepted", { status: 202 });
     } catch (e) {

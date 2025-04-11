@@ -1,3 +1,6 @@
+// This file is run on the customer side
+// The customer has to load its private key and share the public key with the server (the provider)
+
 import { privateDecrypt } from "node:crypto";
 import { Buffer } from "node:buffer";
 
@@ -7,7 +10,8 @@ Deno.serve({ port: 9000 }, async (req) => {
 
   if (method === "POST" && pathname === "/webhook") {
     try {
-      if (Math.random() < 0.8) {
+      if (Math.random() < 0.2) {
+        console.log("MOCK: Simulated an error on customer side, Force a retry");
         throw new Error("Mocked error occured...");
       }
 

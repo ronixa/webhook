@@ -8,6 +8,7 @@ type WebhookJob = {
   url: string;
   payload: unknown;
   attempt: number;
+  target: string; // Customer id - can be an api key or any other secret shared with customer to identify which Public RSA Certificate to use
 };
 
 const redis = createClient({
@@ -96,7 +97,12 @@ Deno.serve({ port: 4242, hostname: "0.0.0.0" }, async (req) => {
 
       console.log("Encrypted Message (base64):", encryptedPayload);
 
-      await enqueue({ url, payload: encryptedPayload, attempt: 0 });
+      await enqueue({
+        url,
+        payload: encryptedPayload,
+        attempt: 0,
+        target: "customer-1",
+      });
       return new Response("Accepted", { status: 202 });
     } catch (e) {
       console.error(e);
