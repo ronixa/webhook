@@ -7,7 +7,7 @@
   ·
   <a href="https://github.com/studiowebux/webhook/issues">Request Feature</a>
 </p>
-</details>
+</div>
 
 ---
 
