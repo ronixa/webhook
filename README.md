@@ -93,7 +93,7 @@ bash 4_kafka_publish.sh
 ### General Flow
 
 
-<div style="visibility:hidden">
+<div class="hide">
 
 ```plantuml
 @startuml
@@ -125,7 +125,7 @@ Infrastructure -> Customer: 12.2 Resend encrypted payload
 
 ### In Memory
 
-<div style="visibility:hidden">
+<div class="hide">
 
 ```plantuml
 @startuml
@@ -165,7 +165,7 @@ The `2_redis_publisher.ts` is exactly the same flow as the `2_publisher.ts`, wit
 
 **Sequential processing**
 
-<div style="visibility:hidden">
+<div class="hide">
 
 ```plantuml
 @startuml
@@ -207,7 +207,7 @@ end
 
 `0_kafka_setup.ts` is required to setup the partitions.
 
-<div style="visibility:hidden">
+<div class="hide">
 
 ```plantuml
 @startuml
@@ -237,7 +237,7 @@ end note
 
 ![](./docs/2_kafka_publisher.png)
 
-<div style="visibility:hidden">
+<div class="hide">
 
 ```plantuml
 @startuml
