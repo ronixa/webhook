@@ -325,6 +325,10 @@ docker run --name lgtm -p 3000:3000 -p 4317:4317 -p 4318:4318 -d \
 	docker.io/grafana/otel-lgtm:0.10.0
 ```
 
+
+![](./docs/grafana_trace.png)
+
+
 ## License
 
 Distributed under the MIT License. See LICENSE for more information.
