@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { Kafka, Partitioners, type Consumer, type Producer } from "kafkajs";
+import { type Consumer, Kafka, Partitioners, type Producer } from "kafkajs";
 
 export function generateId(): string {
   return randomBytes(33).toString("hex");

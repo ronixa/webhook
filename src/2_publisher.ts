@@ -1,4 +1,7 @@
 // deno run -A 2_publisher.ts
+// The retry approach is NOT Sequential. To get a fully sequential you need to handle the retry in-code, (instead of pushing in the queue),
+// See redis seq example for details.
+
 import { publicEncrypt } from "node:crypto";
 import { Buffer } from "node:buffer";
 

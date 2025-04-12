@@ -1,6 +1,10 @@
 {
   "imports": {
     "redis": "npm:redis@^4.7.0",
-    "kafkajs": "npm:kafkajs@^2.2.4"
+    "kafkajs": "npm:kafkajs@^2.2.4",
+    "@opentelemetry/api": "npm:@opentelemetry/api@^1.9.0"
+  },
+  "tasks": {
+    "customer:otlp": "OTEL_METRIC_EXPORT_INTERVAL=10000 OTEL_SERVICE_NAME=webhook OTEL_DENO=true deno run --unstable-otel --allow-net --allow-read src/3_consume.ts"
   }
 }

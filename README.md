@@ -11,7 +11,11 @@
 
 ---
 
-This system ensures secure, isolated communication channels for each client through encrypted webhooks. Each tenant has a unique encryption setup, enhancing data privacy and security across all interactions. Additionally, it incorporates exponential backoff strategies to manage retries efficiently, optimizing reliability and performance during transient failures.
+This system ensures secure, isolated communication channels for each client
+through encrypted webhooks. Each tenant has a unique encryption setup, enhancing
+data privacy and security across all interactions. Additionally, it incorporates
+exponential backoff strategies to manage retries efficiently, optimizing
+reliability and performance during transient failures.
 
 ## Usage
 
@@ -23,8 +27,7 @@ deno run -A 1_generate_keys.ts
 
 **Terminal #2**
 
-
-*In Memory*
+_In Memory_
 
 ```bash
 deno run -A 2_publisher.ts
@@ -32,25 +35,30 @@ deno run -A 2_publisher.ts
 
 OR
 
-*Note: FIFO by default (RPUSH/LPOP), but retries are NOT FIFO.*
+_Note: FIFO by default (RPUSH/LPOP), but retries are NOT FIFO._
 
 ```bash
 deno run -A 2_redis_publisher.ts
 ```
 
-*If sequential retries are required, you must handle them in-code and block the processing until the message is successfully processed or dropped*
+_If sequential retries are required, you must handle them in-code and block the
+processing until the message is successfully processed or dropped_
 
 ```bash
 deno run -A 2_redis_seq_publisher.ts
 ```
 
-*If sequential retries are required, you must handle them in-code and block the processing until the message is successfully processed or dropped*
+_If sequential retries are required, you must handle them in-code and block the
+processing until the message is successfully processed or dropped_
 
 ```bash
 deno run -A 2_kafka_publisher.ts
 ```
 
-You can start multiple consumers (I tested with 3 consumers and 3CC each), this way it can process your customer(s) in parallel and each partition is processed sequentially. (the `key` is used for partitioning, in these example I used `customer-X`)
+You can start multiple consumers (I tested with 3 consumers and 3CC each), this
+way it can process your customer(s) in parallel and each partition is processed
+sequentially. (the `key` is used for partitioning, in these example I used
+`customer-X`)
 
 ```bash
 deno run -A 2_kafka_consume.ts
@@ -58,8 +66,9 @@ deno run -A 2_kafka_consume.ts
 
 **Terminal #3**
 
-This server simulate a customer (Will probably not run in your local infrastructure)
-This is the endpoint we (the provider) send encrypted message to, that consumer has to decrypt the message using its private key.
+This server simulate a customer (Will probably not run in your local
+infrastructure) This is the endpoint we (the provider) send encrypted message
+to, that consumer has to decrypt the message using its private key.
 
 ```bash
 deno run -A 3_consume.ts
@@ -67,16 +76,22 @@ deno run -A 3_consume.ts
 
 **Back in Terminal #1**
 
-*To test in-memory and redis*
+_To test in-memory and redis_
 
 ```bash
 bash 4_publish.sh
 ```
 
-*To test kafka*
+_To test kafka_
 
 ```bash
 bash 4_kafka_publish.sh
+```
+
+## Deno OTEL
+
+```bash
+OTEL_DENO=true deno run --unstable-otel ...
 ```
 
 ## Distributed System (Optional)
@@ -112,6 +127,17 @@ Then Setup your kafka partitions:
 deno run -A 0_kafka_setup.ts
 
 kafka-topics --bootstrap-server localhost:9092 --describe --topic events
+```
+
+## Observability
+
+```bash
+docker run --name lgtm -p 3000:3000 -p 4317:4317 -p 4318:4318 -d \
+	-v "$PWD"/lgtm/grafana:/data/grafana \
+	-v "$PWD"/lgtm/prometheus:/data/prometheus \
+	-v "$PWD"/lgtm/loki:/data/loki \
+	-e GF_PATHS_DATA=/data/grafana \
+	docker.io/grafana/otel-lgtm:0.10.0
 ```
 
 ## License

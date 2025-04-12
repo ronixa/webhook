@@ -1,10 +1,15 @@
 {
   "version": "4",
   "specifiers": {
+    "npm:@opentelemetry/api@1": "1.9.0",
+    "npm:@opentelemetry/api@^1.9.0": "1.9.0",
     "npm:kafkajs@^2.2.4": "2.2.4",
     "npm:redis@^4.7.0": "4.7.0_@redis+client@1.6.0"
   },
   "npm": {
+    "@opentelemetry/api@1.9.0": {
+      "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
+    },
     "@redis/bloom@1.2.0_@redis+client@1.6.0": {
       "integrity": "sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==",
       "dependencies": [
@@ -69,6 +74,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@opentelemetry/api@^1.9.0",
       "npm:kafkajs@^2.2.4",
       "npm:redis@^4.7.0"
     ]
