@@ -118,6 +118,8 @@ Infrastructure -> Customer: 12.2 Resend encrypted payload
 
 ### In Memory
 
+<div hidden>
+
 ```plantuml
 @startuml
 2_publisher.ts -> 2_publisher.ts: Listen on 0.0.0.0:4242/publish
@@ -146,25 +148,31 @@ end
 @enduml
 ```
 
+</div>
+
+![](./docs/2_publisher.png)
+
 ### Redis
 
 The `2_redis_publisher.ts` is exactly the same flow as the `2_publisher.ts`, with the exception that the data is persisted when the server restarts.
 
 **Sequential processing**
 
+<div hidden>
+
 ```plantuml
 @startuml
-2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Listen on 0.0.0.0:4242/publish
-events -> 2_redis_seq_publisher.ts.ts: An event is generated (from any sources)
+2_redis_seq_publisher.ts -> 2_redis_seq_publisher.ts: Listen on 0.0.0.0:4242/publish
+events -> 2_redis_seq_publisher.ts: An event is generated (from any sources)
 
-2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Extract API Key from Headers
-2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Fetch Customer configurations to determine if we need to send the event
+2_redis_seq_publisher.ts -> 2_redis_seq_publisher.ts: Extract API Key from Headers
+2_redis_seq_publisher.ts -> 2_redis_seq_publisher.ts: Fetch Customer configurations to determine if we need to send the event
 loop each relevant customers
-  2_redis_seq_publisher.ts.ts -> provider_database: Fetch Public Key and webhook url
-  2_redis_seq_publisher.ts.ts <-- provider_database
-  2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Prepare message
+  2_redis_seq_publisher.ts -> provider_database: Fetch Public Key and webhook url
+  2_redis_seq_publisher.ts <-- provider_database
+  2_redis_seq_publisher.ts -> 2_redis_seq_publisher.ts: Prepare message
 end
-2_redis_seq_publisher.ts.ts -> enqueue: Enqueue message(s) for processing
+2_redis_seq_publisher.ts -> enqueue: Enqueue message(s) for processing
 
 loop while true
   enqueue -> processMessage: Process enqueued message (background/FIFO)
@@ -184,9 +192,15 @@ end
 @enduml
 ```
 
+</div>
+
+![](./docs/2_redis_seq_publisher.png)
+
 ### Kafka
 
 `0_kafka_setup.ts` is required to setup the partitions.
+
+<div hidden>
 
 ```plantuml
 @startuml
@@ -209,7 +223,17 @@ note over 2_kafka_publisher
   You can start many consumers
   to handle all partitions in parallel.
 end note
+@enduml
+```
 
+</div>
+
+![](./docs/2_kafka_publisher.png)
+
+<div hidden>
+
+```plantuml
+@startuml
 loop listen for messages
   2_kafka_consumer.ts -> 2_kafka_consumer.ts
   eachMessage -> processMessage: Encrypt message
@@ -227,6 +251,10 @@ loop listen for messages
 end
 @enduml
 ```
+
+</div>
+
+![](./docs/2_kafka_consumer.png)
 
 ## Deno OTEL
 
