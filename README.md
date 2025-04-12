@@ -7,7 +7,7 @@
   ·
   <a href="https://github.com/studiowebux/webhook/issues">Request Feature</a>
 </p>
-</div>
+</details>
 
 ---
 
@@ -93,7 +93,9 @@ bash 4_kafka_publish.sh
 ### General Flow
 
 
-<div class="hide">
+<details>
+
+<summary>PlantUML Code</summary>
 
 ```plantuml
 @startuml
@@ -119,13 +121,15 @@ Infrastructure -> Customer: 12.2 Resend encrypted payload
 @enduml
 ```
 
-</div>
+</details>
 
 ![](./docs/general.png)
 
 ### In Memory
 
-<div class="hide">
+<details>
+
+<summary>PlantUML Code</summary>
 
 ```plantuml
 @startuml
@@ -155,7 +159,7 @@ end
 @enduml
 ```
 
-</div>
+</details>
 
 ![](./docs/2_publisher.png)
 
@@ -165,7 +169,9 @@ The `2_redis_publisher.ts` is exactly the same flow as the `2_publisher.ts`, wit
 
 **Sequential processing**
 
-<div class="hide">
+<details>
+
+<summary>PlantUML Code</summary>
 
 ```plantuml
 @startuml
@@ -199,7 +205,7 @@ end
 @enduml
 ```
 
-</div>
+</details>
 
 ![](./docs/2_redis_seq_publisher.png)
 
@@ -207,7 +213,9 @@ end
 
 `0_kafka_setup.ts` is required to setup the partitions.
 
-<div class="hide">
+<details>
+
+<summary>PlantUML Code</summary>
 
 ```plantuml
 @startuml
@@ -233,11 +241,13 @@ end note
 @enduml
 ```
 
-</div>
+</details>
 
 ![](./docs/2_kafka_publisher.png)
 
-<div class="hide">
+<details>
+
+<summary>PlantUML Code</summary>
 
 ```plantuml
 @startuml
@@ -259,7 +269,7 @@ end
 @enduml
 ```
 
-</div>
+</details>
 
 ![](./docs/2_kafka_consumer.png)
 
