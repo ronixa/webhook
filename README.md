@@ -88,6 +88,146 @@ _To test kafka_
 bash 4_kafka_publish.sh
 ```
 
+## Architecture
+
+### General Flow
+
+```plantuml
+@startuml
+Customer -> Provider: 1. Subscribe
+Provider -> Infrastructure: 2. Generate API Key
+Provider -> Customer: 3. Send API key
+
+Customer -> Customer: 4. Generate RSA Key
+Customer -> Provider: 5. Send public key using API Key
+Provider -> Infrastructure: 6. Store Public key with API Key
+
+Customer -> Provider: 7. Configure events to subscribe
+Customer -> Provider: 8. Configure webhook url
+
+Infrastructure -> Infrastructure: 9. Listen for configured events
+Infrastructure -> Infrastructure: 10. Encrypt payload
+Infrastructure -> Customer: 11. Send encrypted payload to customer webhook
+
+
+Customer -> Infrastructure: 12. Acknowledged reception
+Infrastructure -> Infrastructure: 12.1 Exponential Backoff Retry (until max retries, then send to DLQ*)
+Infrastructure -> Customer: 12.2 Resend encrypted payload
+@enduml
+```
+
+### In Memory
+
+```plantuml
+@startuml
+2_publisher.ts -> 2_publisher.ts: Listen on 0.0.0.0:4242/publish
+events -> 2_publisher.ts: An event is generated (from any sources)
+
+2_publisher.ts -> 2_publisher.ts: Extract API Key from Headers
+2_publisher.ts -> 2_publisher.ts: Fetch Customer configurations to determine if we need to send the event
+loop each relevant customers
+  2_publisher.ts -> provider_database: Fetch Public Key and webhook url
+  2_publisher.ts <-- provider_database
+  2_publisher.ts -> 2_publisher.ts: Prepare message
+end
+2_publisher.ts -> enqueue: Enqueue message(s) for processing
+
+
+loop while true
+  enqueue -> processMessage: Process enqueued message (background/FIFO)
+  processMessage -> processMessage: Encrypt message
+  processMessage -> 3_consume.ts: Send Encrypted message to customer Webhook
+  processMessage <-- 3_consume.ts: if no ACK, the message is placed back at the end of the local queue.
+  note right
+    It causes the message processing to NOT be sequential.
+  end note
+  processMessage -> processMessage: Process next message
+end
+@enduml
+```
+
+### Redis
+
+The `2_redis_publisher.ts` is exactly the same flow as the `2_publisher.ts`, with the exception that the data is persisted when the server restarts.
+
+**Sequential processing**
+
+```plantuml
+@startuml
+2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Listen on 0.0.0.0:4242/publish
+events -> 2_redis_seq_publisher.ts.ts: An event is generated (from any sources)
+
+2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Extract API Key from Headers
+2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Fetch Customer configurations to determine if we need to send the event
+loop each relevant customers
+  2_redis_seq_publisher.ts.ts -> provider_database: Fetch Public Key and webhook url
+  2_redis_seq_publisher.ts.ts <-- provider_database
+  2_redis_seq_publisher.ts.ts -> 2_redis_seq_publisher.ts.ts: Prepare message
+end
+2_redis_seq_publisher.ts.ts -> enqueue: Enqueue message(s) for processing
+
+loop while true
+  enqueue -> processMessage: Process enqueued message (background/FIFO)
+  processMessage -> processMessage: Encrypt message
+  processMessage -> 3_consume.ts: Send Encrypted message to customer Webhook
+  loop retries < max_retries
+    processMessage <-- 3_consume.ts: if no ACK, the message is retried using the exponential backoff strategy
+    note right
+      It forces the message to be processed sequentially,
+      but it blocks ALL enqueued messages to be processed.
+    end note
+  end
+  processMessage -> processMessage: Exhausted retries will drop the message, can be move in a DLQ*
+
+  processMessage -> processMessage: Process next message
+end
+@enduml
+```
+
+### Kafka
+
+`0_kafka_setup.ts` is required to setup the partitions.
+
+```plantuml
+@startuml
+2_kafka_publisher.ts -> 2_kafka_publisher.ts: Listen on 0.0.0.0:4242/publish
+events -> 2_kafka_publisher.ts: An event is generated (from any sources)
+
+2_kafka_publisher.ts -> 2_kafka_publisher.ts: Extract API Key from Headers
+2_kafka_publisher.ts -> 2_kafka_publisher.ts: Fetch Customer configurations to determine if we need to send the event
+loop each relevant customers
+  2_kafka_publisher.ts -> provider_database: Fetch Public Key and webhook url
+  2_kafka_publisher.ts <-- provider_database
+  2_kafka_publisher.ts -> 2_kafka_publisher.ts: Prepare message, set the key using the customer id to optimize the partitions
+end
+2_kafka_publisher.ts -> sendMessage: Send message to 'webhook' topics
+
+note over 2_kafka_publisher
+  This strategy is flexible,
+  you can configure your partitions and consumers
+  to process messages in parallel.
+  You can start many consumers
+  to handle all partitions in parallel.
+end note
+
+loop listen for messages
+  2_kafka_consumer.ts -> 2_kafka_consumer.ts
+  eachMessage -> processMessage: Encrypt message
+  processMessage -> 3_consume.ts: Send Encrypted message to customer webhook
+  loop retries < max_retries
+    processMessage <-- 3_consume.ts: if no ACK, the message is retried using the exponential backoff strategy
+    note right
+      It forces the message to be processed sequentially,
+      but it blocks ALL messages from that **partition** to be processed.
+    end note
+  end
+  processMessage -> processMessage: Exhausted retries will drop the message (commit), can be move in a DLQ*
+
+  processMessage -> processMessage: Process next message
+end
+@enduml
+```
+
 ## Deno OTEL
 
 ```bash
